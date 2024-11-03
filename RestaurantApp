@@ -1,0 +1,136 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class MenuItem {
+    String name;
+    double price;
+    String category;
+
+    public MenuItem(String name, double price, String category) {
+        this.name = name;
+        this.price = price;
+        this.category = category;
+    }
+
+    @Override
+    public String toString() {
+        return name + " (" + category + ") - Rp " + price;
+    }
+}
+
+class OrderItem {
+    MenuItem menuItem;
+    int quantity;
+
+    public OrderItem(MenuItem menuItem, int quantity) {
+        this.menuItem = menuItem;
+        this.quantity = quantity;
+    }
+
+    public double getTotalPrice() {
+        return menuItem.price * quantity;
+    }
+}
+
+public class RestaurantApp {
+    private ArrayList<MenuItem> menu = new ArrayList<>();
+    private ArrayList<OrderItem> order = new ArrayList<>();
+    private Scanner scanner = new Scanner(System.in);
+
+    public void addMenuItem(String name, double price, String category) {
+        menu.add(new MenuItem(name, price, category));
+    }
+
+    public void displayMenu() {
+        System.out.println("=== Menu Restoran ===");
+        for (int i = 0; i < menu.size(); i++) {
+            System.out.println((i + 1) + ". " + menu.get(i));
+        }
+        System.out.println();
+    }
+
+    public void placeOrder() {
+        System.out.println("Masukkan pesanan (Maksimal 4 Menu):");
+        for (int i = 0; i < 4; i++) {
+            displayMenu();
+            System.out.print("Pilih nomor menu atau tekan 0 untuk selesai: ");
+            int menuNumber = scanner.nextInt();
+            if (menuNumber == 0) break;
+
+            System.out.print("Masukkan jumlah: ");
+            int quantity = scanner.nextInt();
+
+            if (menuNumber > 0 && menuNumber <= menu.size() && quantity > 0) {
+                MenuItem menuItem = menu.get(menuNumber - 1);
+                order.add(new OrderItem(menuItem, quantity));
+                System.out.println("Pesanan berhasil ditambahkan: " + menuItem.name + " x" + quantity + "\n");
+            } else {
+                System.out.println("Input tidak valid. Coba lagi.\n");
+            }
+        }
+    }
+
+    public void printReceipt() {
+        double subtotal = 0;
+        boolean applyDrinkOffer = false;
+
+        System.out.println("=== Struk Pesanan ===");
+        for (OrderItem orderItem : order) {
+            double itemTotalPrice = orderItem.getTotalPrice();
+            subtotal += itemTotalPrice;
+
+            System.out.printf("%s x%d - Rp %.2f\n", orderItem.menuItem.name, orderItem.quantity, itemTotalPrice);
+
+            if (orderItem.menuItem.category.equalsIgnoreCase("minuman") && subtotal > 50000) {
+                applyDrinkOffer = true;
+            }
+        }
+
+        // Menghitung biaya dengan pajak dan pelayanan
+        double tax = 0.1 * subtotal;
+        double serviceCharge = 20000;
+
+        // Menghitung total dengan diskon jika berlaku
+        double total = subtotal + tax + serviceCharge;
+        double discount = 0;
+        if (total > 100000) {
+            discount = 0.1 * total;
+            total -= discount;
+        }
+
+        System.out.printf("\nSubtotal: Rp %.2f\n", subtotal);
+        System.out.printf("Pajak (10%%): Rp %.2f\n", tax);
+        System.out.printf("Biaya Pelayanan: Rp %.2f\n", serviceCharge);
+
+        if (discount > 0) {
+            System.out.printf("Diskon (10%%): -Rp %.2f\n", discount);
+        }
+
+        if (applyDrinkOffer) {
+            System.out.println("Penawaran: Beli satu gratis satu untuk minuman berlaku!");
+        }
+
+        System.out.printf("Total: Rp %.2f\n", total);
+        System.out.println("=== Terima Kasih ===");
+    }
+
+    public static void main(String[] args) {
+        RestaurantApp app = new RestaurantApp();
+
+        // Menambahkan item menu
+        app.addMenuItem("Nasi Goreng", 30000, "makanan");
+        app.addMenuItem("Ayam Bakar", 40000, "makanan");
+        app.addMenuItem("Ayam Gulai", 35000, "makanan");
+        app.addMenuItem("Bebek Goreng", 45000, "makanan");
+        app.addMenuItem("Teh Manis", 5000, "minuman");
+        app.addMenuItem("Es Jeruk", 7000, "minuman");
+        app.addMenuItem("Lemon Tea", 8000, "minuman");
+        app.addMenuItem("Aneka Jus", 10000, "minuman");
+
+        // Mulai proses pemesanan
+        app.placeOrder();
+
+        // Cetak struk
+        app.printReceipt();
+    }
+}
